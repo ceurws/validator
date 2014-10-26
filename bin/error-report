@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# CEUR-WS.org
+# Christoph Lange 2014-10-19
+
+function display-title () {
+    echo "* $(< $ERRORPATH/titles/$1)"
+}
+
+function display-details () {
+    cat "$ERRORPATH/details/$1"
+}
+
+MYPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ERRORPATH="$MYPATH"/../share/error-report
+
+if [[ $# -eq 0 ]] # no errors
+then
+    exit 1
+fi
+
+if [[ $1 == --help ]]
+then
+    echo "Usage: error-report --ERROR [ARG...] ..."
+    echo "Generates a report of well-known errors in submissions to CEUR-WS.org"
+    echo "Errors supported so far:"
+    echo "--ERROR		Title"
+    cd $ERRORPATH/titles
+    for error in *
+    do
+	echo "--$error"
+	echo "		$(< $error)"
+    done
+    exit 0
+fi
+
+echo "There are the following problems with your submission (full explanations below):"
+echo
+
+for error in $*
+do
+    if [[ $error == --* ]]
+    then
+        display-title "${error#--}"
+    fi
+done
+
+echo 
+
+for error in $*	
+do
+    if [[ $error == --* ]]
+    then
+        display-title "${error#--}"
+	echo
+        display-details "${error#--}"
+	echo
+    fi
+done
+
+

@@ -1,0 +1,7 @@
+You used an old template for the index.html file.  The latest template for the
+index.html file is at
+
+http://ceur-ws.org/Vol-XXX/index.html
+
+Use right-click/Save as to get a copy.  It includes a line like
+<!-- CEURVERSION=YYYY-MM-DD --> indicating the version.

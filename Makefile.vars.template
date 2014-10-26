@@ -1,0 +1,4 @@
+# Adapt this file and copy it to Makefile.vars.
+
+# Fill in the CEUR-WS.org SSH server in the form user@host here:
+SSH = 
