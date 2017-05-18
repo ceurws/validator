@@ -30,7 +30,7 @@ standard scientific layout.
 EOF
 }
 
-while getopts x: opt
+while getopts hx: opt
 do
     case $opt in
         h) help=1 ;;
