@@ -1,0 +1,73 @@
+#!/bin/bash
+# 
+# characters-per-paper: counts characters per paper (*.pdf in the current directory) and estimates the number of pages
+#
+# © CEUR-WS.org and Christoph Lange <math.semantic.web@gmail.com> 2017
+
+# initialise start values
+# initialise minimum with a large number
+minCharacters=2147483647
+minPages=2147483647
+sumCharacters=0
+sumPages=0
+
+# a reasonable minimum number of characters that one page should have
+CHARACTERS_PER_PAGE=2000
+
+function help {
+cat <<-EOF
+Usage: `basename $0` [-x EXCLUDE]
+For each PDF file in the current directory, count its number of characters, 
+determine its number of pages, and estimate its number of pages if it had a 
+standard scientific layout.
+
+  -x	Ignore PDF files that match this filename pattern.  bash's extglob
+        syntax applies, but any globbing characters have to be escaped.
+        For example:
+        -x preface.pdf
+        -x 'invited-@(turing|dijkstra).pdf'
+  -h	Display this help
+EOF
+}
+
+while getopts x: opt
+do
+    case $opt in
+        h) help=1 ;;
+        x) exclude="$OPTARG" ;;
+    esac
+done
+
+if [[ $help == 1 ]]
+then
+    help
+    exit 0
+elif [[ 0 == 1 ]] # TODO validate command line arguments
+then
+    help
+    exit 1
+fi
+
+for paper in *.pdf
+do
+    if [[ $paper == $exclude ]]
+    then
+        continue
+    fi
+    
+    characters=$(pdftotext $paper - | wc -c)
+    # tr -d '\r' is for compatibility with the Windows version of pdfinfo
+    pages=$(pdfinfo $paper | awk '/^Pages:/ { print $2 }' | tr -d '\r')
+    echo "$paper: $characters characters, $pages pages"
+
+    [[ $characters -lt $minCharacters ]] && minCharacters=$characters
+    [[ $pages -lt $minPages ]] && minPages=$pages
+    sumCharacters=$((sumCharacters + characters))
+    sumPages=$((sumPages + pages))
+done
+
+minPaperPages=$(( minCharacters / CHARACTERS_PER_PAGE ))
+sumPaperPages=$(( sumCharacters / CHARACTERS_PER_PAGE ))
+
+echo "Minimum: $minCharacters characters ($minPaperPages+ ideal pages), $minPages PDF pages"
+echo "Sum: $sumCharacters characters ($sumPaperPages+ ideal pages), $sumPages PDF pages"
