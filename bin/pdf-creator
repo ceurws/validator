@@ -1,0 +1,22 @@
+#!/bin/bash
+
+exec > ~/MANAGEMENT/pdf-creator.csv
+exec 2> /dev/null
+
+echo "File;CreationDate;Creator;Producer";
+metadata=$(mktemp)
+find ~/www -name '*.pdf' -print0 | while IFS= read -d $'\0' line
+do
+    echo -n "$line;"
+    pdfinfo -rawdates "$line" > "$metadata"
+    unset Creator Producer CreationDate
+    while read field value
+    do
+        if [[ "$field" == "Creator:" ]]; then Creator="$value"; fi
+        if [[ "$field" == "Producer:" ]]; then Producer="$value"; fi
+        if [[ "$field" == "CreationDate:" && "$value" =~ D:([0-9]{4})([0-9]{2})([0-9]{2}) ]]; then CreationDate="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}-${BASH_REMATCH[3]}"; fi
+    done < "$metadata"
+    echo "$CreationDate;$Creator;$Producer"
+done
+
+rm "$metadata"
